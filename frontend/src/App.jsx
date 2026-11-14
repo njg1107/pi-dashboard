@@ -8,13 +8,13 @@ import Greeting from './components/Greeting';
 export default function App() {
   const [weather, setWeather] = useState(null);
   const [todos, setTodos] = useState([]);
-  
+
   useEffect(() => {
     fetch("http://localhost:8000/api/weather")
       .then(res => res.json())
       .then(data => setWeather(data));
   }, []);
-    useEffect(() => {
+  useEffect(() => {
     fetch("http://localhost:8000/api/todos")
       .then(res => res.json())
       .then(data => setTodos(data));
@@ -23,13 +23,17 @@ export default function App() {
   // useEffect
   // setInterval
   // clearInterval
-  function toggleTodo(id) {
-    setTodos(todos.map(t => (t.id === id ? { ...t, done: !t.done } : t)));
+  async function toggleTodo(id) {
+    const res = await fetch(`http://localhost:8000/api/todos/${id}`, {
+      method: "PATCH",
+    });
+    const updated = await res.json();
+    setTodos(todos.map(t => (t.id ? updated : t)));
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
-        <Greeting name="Nathan"/>
+      <Greeting name="Nathan" />
       <div className="grid grid-cols-3 gap-8">
         <div className="bg-gray-800 rounded-2xl p-6 text-gray-400">
           <Clock />
