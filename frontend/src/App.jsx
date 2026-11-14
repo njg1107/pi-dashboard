@@ -10,19 +10,25 @@ export default function App() {
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/weather")
-      .then(res => res.json())
-      .then(data => setWeather(data));
+    async function loadWeather() {
+      try {
+        const res = await fetch("http://localhost:8000/api/weather");
+        setWeather(res.ok ? await res.json() : null);
+      } catch {
+        // backend unreachable: keep showing the last value
+      }
+    }
+
+    loadWeather(); // once on load
+    const timer = setInterval(loadWeather, 5 * 60 * 1000); // then every 5 minutes
+    return () => clearInterval(timer);
   }, []);
+
   useEffect(() => {
     fetch("http://localhost:8000/api/todos")
       .then(res => res.json())
       .then(data => setTodos(data));
   }, []);
-  // useState
-  // useEffect
-  // setInterval
-  // clearInterval
 
   async function toggleTodo(id) {
     const res = await fetch(`http://localhost:8000/api/todos/${id}`, {
@@ -44,10 +50,9 @@ export default function App() {
 
   async function deleteTodo(id) {
     await fetch(`http://localhost:8000/api/todos/${id}`, { method: "DELETE" });
-    // TODO: setTodos with the task whose id matches removed
-    // Hint: .filter()
     setTodos(todos.filter(t => t.id !== id));
   }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <Greeting name="Nathan" />
